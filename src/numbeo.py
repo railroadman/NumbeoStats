@@ -5,6 +5,9 @@ import time
 import re
 from datetime import datetime
 import xml.etree.ElementTree as ET
+import os
+import sys
+from db_writer import init_db, insert_dataframe
 
 # ✅ Страны Европы и не только
 COUNTRIES = [
@@ -26,6 +29,12 @@ country_currency_map = {
     "Spain": "EUR",
     "United Kingdom": "GBP"
 }
+
+today = datetime.now().strftime("%Y-%m-%d")
+
+if os.path.exists(f"european_food_prices_{today}.xlsx"):
+    print(f"Data for this day {today} already grabbed ")
+    sys.exit()
 
 # ✅ Извлекаем числовую цену из текста (например "€2.49" → 2.49)
 def extract_price(text):
@@ -154,10 +163,16 @@ currency_rates = get_currency_rates_to_eur()
 df["Price (EUR)"] = df.apply(safe_convert_to_eur, axis=1)
 
 # ✅ Добавим дату
-today = datetime.now().strftime("%Y-%m-%d")
+
 df["Date"] = today
 
 # ✅ Сохраняем в Excel
 filename = f"european_food_prices_{today}.xlsx"
+print(f"📄 Data save to file: {filename}")
 df.to_excel(filename, index=False)
-print(f"📄 Данные сохранены в файл: {filename}")
+# save to sqlite db
+init_db()
+insert_dataframe(df)
+print(f"📄 Data save to  DB")
+
+
