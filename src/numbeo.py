@@ -62,8 +62,7 @@ def get_currency_rates_to_eur():
         currency = cube.attrib["currency"]
         rate = float(cube.attrib["rate"])
         currency_to_eur[currency] = 1 / rate
-
-    # Преобразуем к нужным странам:
+    
     country_currency_map = {
         "Ukraine": "UAH",
         "Germany": "EUR",
@@ -82,7 +81,7 @@ def get_currency_rates_to_eur():
     for country, code in country_currency_map.items():
         result[country] = currency_to_eur.get(code, None)
     return result
-# ✅ Парсинг HTML с Numbeo
+
 BASE_URL = "https://www.numbeo.com/cost-of-living/country_result.jsp?country="
 
 
@@ -97,7 +96,7 @@ def fetch_prices_from_html(country):
     soup = BeautifulSoup(response.content, "html.parser")
     table = soup.find("table", class_="data_wide_table")
     if not table:
-        print(f"⚠️ Таблица не найдена на странице {country}")
+        print(f"⚠️ Table not found on page {country}")
         return []
 
     data = []
@@ -115,7 +114,7 @@ def fetch_prices_from_html(country):
                     "Product": item,
                     "Price (Local Currency)": price_value
                 })
-    print(f"✅ Найдено {len(data)} продуктов в {country}")
+    print(f"✅ Found {len(data)} products in {country}")
     return data
 
 def safe_convert_to_eur(row):
@@ -130,10 +129,10 @@ def safe_convert_to_eur(row):
             return round(price * rate, 2)
         else:
             
-            print(f"⚠️ Пропущено: {country}, price={price}, rate={rate}")
+            print(f"⚠️ Skipped: {country}, price={price}, rate={rate}")
             return None
     except Exception as e:
-        print(f"❌ Ошибка при пересчёте: {row} → {e}")
+        print(f"❌ Error in a price calculation: {row} → {e}")
         return None
 def get_uah_to_eur_from_nbu():
     url = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=EUR&json"
@@ -155,7 +154,7 @@ for country in COUNTRIES:
 df = pd.DataFrame(all_data)
 
 if df.empty:
-    print("⚠️ Не удалось собрать данные — таблица пуста.")
+    print("⚠️ Can get data data is empty.")
     exit()
 
 # ✅ Добавим цену в евро
